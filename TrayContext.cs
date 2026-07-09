@@ -69,11 +69,9 @@ class TrayContext : ApplicationContext
         if (!InActiveHours(now)) return;
         if (_toast != null && !_toast.IsDisposed) return;
 
+        // 全屏延后：不改 _nextReminderAt，每 30 秒重查一次，退出全屏后很快补弹
         if (_store.Config.DeferWhenFullscreen && NativeMethods.IsForegroundFullscreen())
-        {
-            _nextReminderAt = now.AddMinutes(5);
             return;
-        }
 
         ShowToast();
     }
