@@ -93,7 +93,6 @@ class PanelForm : Form
             MinimizeBox = false,
             Font = Font,
         };
-        PaperTheme.Style(dlg);
         var num = new NumericUpDown
         {
             Minimum = 10, Maximum = 2000, Value = _store.Config.CupMl, Increment = 50,
@@ -104,6 +103,7 @@ class PanelForm : Form
         var ok = PaperTheme.PaperButton("记录", new Point(16, 54), new Size(90, 28), accent: true);
         ok.DialogResult = DialogResult.OK;
         dlg.Controls.AddRange(new Control[] { num, lbl, ok });
+        PaperTheme.PaperWindow(dlg, "记录饮水量");
         dlg.AcceptButton = ok;
         if (dlg.ShowDialog() == DialogResult.OK)
         {

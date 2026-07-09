@@ -35,6 +35,19 @@ static class NativeMethods
     [DllImport("user32.dll")]
     static extern bool IsZoomed(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    static extern bool ReleaseCapture();
+
+    [DllImport("user32.dll")]
+    static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
+    /// <summary>让无边框窗口跟随鼠标拖动（发 WM_NCLBUTTONDOWN + HTCAPTION）。</summary>
+    public static void DragWindow(Form f)
+    {
+        ReleaseCapture();
+        SendMessage(f.Handle, 0xA1, (IntPtr)0x2, IntPtr.Zero);
+    }
+
     public const int WS_EX_NOACTIVATE = 0x08000000;
     public const int WS_EX_TOOLWINDOW = 0x00000080;
     public const int WS_EX_TOPMOST = 0x00000008;

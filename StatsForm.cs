@@ -19,8 +19,6 @@ class StatsForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
-        PaperTheme.Style(this);
-        Paint += (_, e) => PaperTheme.PaintGrain(this, e.Graphics);
 
         _summary.AutoSize = true;
         _summary.Location = new Point(20, 16);
@@ -46,6 +44,7 @@ class StatsForm : Form
         _list.ForeColor = PaperTheme.Ink;
 
         Controls.AddRange(new Control[] { _summary, _chart, listLabel, _list });
+        PaperTheme.PaperWindow(this, "喝水统计");
         Load += (_, _) => RefreshStats();
     }
 

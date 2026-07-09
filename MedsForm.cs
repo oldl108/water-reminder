@@ -18,8 +18,6 @@ class MedsForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
-        PaperTheme.Style(this);
-        Paint += (_, e) => PaperTheme.PaintGrain(this, e.Graphics);
 
         var hint = new Label
         {
@@ -54,6 +52,7 @@ class MedsForm : Form
         };
 
         Controls.AddRange(new Control[] { hint, _list, bAdd, bEdit, bDel });
+        PaperTheme.PaperWindow(this, "吃药提醒");
         RefreshList();
     }
 
@@ -88,7 +87,6 @@ class MedsForm : Form
             MinimizeBox = false,
             Font = Font,
         };
-        PaperTheme.Style(dlg);
         var lblName = new Label { Text = "药名", AutoSize = true, Location = new Point(20, 20) };
         var tbName = new TextBox
         {
@@ -150,6 +148,7 @@ class MedsForm : Form
         };
 
         dlg.Controls.AddRange(new Control[] { lblName, tbName, lblTimes, tbTimes, lblHint, ok });
+        PaperTheme.PaperWindow(dlg, existing == null ? "添加吃药提醒" : "编辑吃药提醒");
         dlg.AcceptButton = ok;
         dlg.ShowDialog(this);
     }

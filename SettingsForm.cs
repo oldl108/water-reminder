@@ -22,8 +22,6 @@ class SettingsForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
-        PaperTheme.Style(this);
-        Paint += (_, e) => PaperTheme.PaintGrain(this, e.Graphics);
 
         int y = 20;
         var interval = AddRow("提醒间隔（分钟）", c.IntervalMinutes, 10, 240, ref y);
@@ -66,6 +64,7 @@ class SettingsForm : Form
         };
 
         Controls.AddRange(new Control[] { fullscreen, autostart, save });
+        PaperTheme.PaperWindow(this, "设置");
     }
 
     NumericUpDown AddRow(string label, int value, int min, int max, ref int y)

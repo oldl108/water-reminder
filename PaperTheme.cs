@@ -68,6 +68,56 @@ static class PaperTheme
         };
     }
 
+    /// <summary>
+    /// 把带系统标题栏的窗口改造成整体纸风格：去掉系统边框，
+    /// 自绘纸色标题栏（标题 + ✕ 关闭 + 拖动），内容整体下移。
+    /// 在所有控件添加完之后调用。
+    /// </summary>
+    public static void PaperWindow(Form f, string title)
+    {
+        const int TitleH = 40;
+        f.FormBorderStyle = FormBorderStyle.None;
+        foreach (Control c in f.Controls) c.Top += TitleH;
+        f.ClientSize = new Size(f.ClientSize.Width, f.ClientSize.Height + TitleH);
+        Style(f);
+
+        var titleLbl = new Label
+        {
+            Text = title,
+            Font = new Font("Microsoft YaHei UI", 10f, FontStyle.Bold),
+            ForeColor = Ink,
+            AutoSize = true,
+            Location = new Point(16, 11),
+        };
+        titleLbl.MouseDown += (_, _) => NativeMethods.DragWindow(f);
+
+        var close = new Label
+        {
+            Text = "✕",
+            ForeColor = InkLight,
+            Size = new Size(28, 26),
+            TextAlign = ContentAlignment.MiddleCenter,
+            Location = new Point(f.ClientSize.Width - 40, 8),
+            Anchor = AnchorStyles.Top | AnchorStyles.Right,
+            Cursor = Cursors.Hand,
+        };
+        close.MouseEnter += (_, _) => close.ForeColor = Ink;
+        close.MouseLeave += (_, _) => close.ForeColor = InkLight;
+        close.Click += (_, _) => f.Close();
+
+        f.Controls.Add(titleLbl);
+        f.Controls.Add(close);
+        f.MouseDown += (_, e) => { if (e.Y < TitleH) NativeMethods.DragWindow(f); };
+        f.KeyPreview = true;
+        f.KeyDown += (_, e) => { if (e.KeyCode == Keys.Escape) f.Close(); };
+        f.Paint += (_, e) =>
+        {
+            using var pen = new Pen(Border);
+            e.Graphics.DrawLine(pen, 12, TitleH - 4, f.ClientSize.Width - 12, TitleH - 4);
+        };
+        MakePaperCard(f, 12);
+    }
+
     public static Button PaperButton(string text, Point loc, Size size, bool accent = false)
     {
         var b = new Button
