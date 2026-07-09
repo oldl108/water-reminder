@@ -34,7 +34,16 @@ class TrayContext : ApplicationContext
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("暂停提醒 1 小时", null, (_, _) => PauseFor(TimeSpan.FromHours(1)));
         menu.Items.Add("恢复提醒", null, (_, _) => { _pausedUntil = DateTime.MinValue; ScheduleNext(); Notify("提醒已恢复"); });
-        menu.Items.Add("立即提醒（看看效果）", null, (_, _) => { if (_toast == null || _toast.IsDisposed) ShowToast(); });
+        menu.Items.Add("测试提醒（5 秒后弹出，可先切回游戏）", null, (_, _) =>
+        {
+            var t = new System.Windows.Forms.Timer { Interval = 5000 };
+            t.Tick += (_, _) =>
+            {
+                t.Dispose();
+                if (_toast == null || _toast.IsDisposed) ShowToast();
+            };
+            t.Start();
+        });
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => Exit());
         _tray.ContextMenuStrip = menu;
