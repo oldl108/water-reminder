@@ -15,12 +15,14 @@ class PanelForm : Form
         _store = store;
         _onChanged = onChanged;
 
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         FormBorderStyle = FormBorderStyle.None;
         StartPosition = FormStartPosition.Manual;
         ShowInTaskbar = false;
         TopMost = true;
         BackColor = Color.White;
-        Size = new Size(280, 218);
+        Size = new Size(320, 224);
         Font = new Font("Microsoft YaHei UI", 9f);
 
         var header = new Label
@@ -36,7 +38,7 @@ class PanelForm : Form
         _progressText.TextAlign = ContentAlignment.MiddleRight;
 
         _progressBar.Location = new Point(16, 44);
-        _progressBar.Size = new Size(248, 8);
+        _progressBar.Size = new Size(288, 8);
         _progressBar.BackColor = Color.FromArgb(240, 240, 240);
         _progressFill.Location = new Point(0, 0);
         _progressFill.Size = new Size(0, 8);
@@ -48,27 +50,27 @@ class PanelForm : Form
         for (int i = 0; i < amounts.Length; i++)
         {
             int ml = amounts[i];
-            var b = MakeButton($"+{ml}", new Point(16 + i * 62, y), new Size(56, 30));
+            var b = MakeButton($"+{ml}", new Point(16 + i * 74, y), new Size(66, 30));
             b.Click += (_, _) => { _store.AddWater(ml); Refresh_(); _onChanged(); };
             Controls.Add(b);
         }
-        var bCustom = MakeButton("…", new Point(16 + 3 * 62, y), new Size(56, 30));
+        var bCustom = MakeButton("…", new Point(16 + 3 * 74, y), new Size(66, 30));
         bCustom.Click += (_, _) => CustomAmount();
         Controls.Add(bCustom);
 
         _standText.AutoSize = true;
-        _standText.Location = new Point(16, y + 44);
+        _standText.Location = new Point(16, y + 46);
         _standText.ForeColor = Color.FromArgb(110, 110, 110);
 
-        var bStand = MakeButton("站起活动 +1", new Point(160, y + 38), new Size(104, 28));
+        var bStand = MakeButton("站起活动 +1", new Point(194, y + 40), new Size(110, 30));
         bStand.Click += (_, _) => { _store.AddStand(); Refresh_(); };
         Controls.Add(bStand);
 
-        var bPause = MakeButton("暂停提醒 1 小时", new Point(16, y + 76), new Size(120, 28));
+        var bPause = MakeButton("暂停提醒 1 小时", new Point(16, y + 82), new Size(132, 30));
         bPause.Click += (_, _) => { PauseRequested?.Invoke(); Hide(); };
-        var bStats = MakeButton("统计", new Point(144, y + 76), new Size(56, 28));
+        var bStats = MakeButton("统计", new Point(156, y + 82), new Size(70, 30));
         bStats.Click += (_, _) => { StatsRequested?.Invoke(); Hide(); };
-        var bSettings = MakeButton("设置", new Point(208, y + 76), new Size(56, 28));
+        var bSettings = MakeButton("设置", new Point(234, y + 82), new Size(70, 30));
         bSettings.Click += (_, _) => { SettingsRequested?.Invoke(); Hide(); };
 
         Controls.AddRange(new Control[] { header, _progressText, _progressBar, _standText, bPause, bStats, bSettings });
@@ -101,10 +103,12 @@ class PanelForm : Form
     {
         using var dlg = new Form
         {
+            AutoScaleDimensions = new SizeF(96F, 96F),
+            AutoScaleMode = AutoScaleMode.Dpi,
             Text = "记录饮水量",
             FormBorderStyle = FormBorderStyle.FixedDialog,
             StartPosition = FormStartPosition.CenterScreen,
-            Size = new Size(240, 130),
+            ClientSize = new Size(240, 100),
             MaximizeBox = false,
             MinimizeBox = false,
             Font = Font,

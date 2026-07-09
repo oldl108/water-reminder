@@ -11,9 +11,11 @@ class StatsForm : Form
     public StatsForm(DataStore store)
     {
         _store = store;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         Text = "喝水统计";
         StartPosition = FormStartPosition.CenterScreen;
-        Size = new Size(420, 430);
+        ClientSize = new Size(440, 400);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
@@ -24,7 +26,7 @@ class StatsForm : Form
         _summary.Font = new Font("Microsoft YaHei UI", 10f);
 
         _chart.Location = new Point(20, 70);
-        _chart.Size = new Size(364, 170);
+        _chart.Size = new Size(400, 170);
         _chart.Paint += DrawChart;
 
         var listLabel = new Label
@@ -35,7 +37,7 @@ class StatsForm : Form
             Location = new Point(20, 252),
         };
         _list.Location = new Point(20, 276);
-        _list.Size = new Size(364, 100);
+        _list.Size = new Size(400, 100);
         _list.BorderStyle = BorderStyle.FixedSingle;
 
         Controls.AddRange(new Control[] { _summary, _chart, listLabel, _list });

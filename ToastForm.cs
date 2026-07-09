@@ -29,16 +29,15 @@ class ToastForm : Form
 
     public ToastForm(int sitMinutes, int cupMl)
     {
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         FormBorderStyle = FormBorderStyle.None;
         StartPosition = FormStartPosition.Manual;
         ShowInTaskbar = false;
         TopMost = true;
         BackColor = Color.White;
-        Size = new Size(300, 108);
+        Size = new Size(340, 116);
         Font = new Font("Microsoft YaHei UI", 9f);
-
-        var wa = Screen.PrimaryScreen!.WorkingArea;
-        Location = new Point(wa.Right - Width - 16, wa.Bottom - Height - 16);
 
         var title = new Label
         {
@@ -54,13 +53,13 @@ class ToastForm : Form
                 : "喝口水，顺便站起来动一动",
             ForeColor = Color.FromArgb(110, 110, 110),
             AutoSize = true,
-            Location = new Point(15, 38),
+            Location = new Point(15, 40),
         };
         var btnDrank = new Button
         {
             Text = $"已喝 +{cupMl}ml",
-            Size = new Size(170, 30),
-            Location = new Point(14, 64),
+            Size = new Size(190, 32),
+            Location = new Point(14, 72),
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.FromArgb(230, 241, 251),
             ForeColor = Color.FromArgb(12, 68, 124),
@@ -72,8 +71,8 @@ class ToastForm : Form
         var btnLater = new Button
         {
             Text = "稍后",
-            Size = new Size(96, 30),
-            Location = new Point(190, 64),
+            Size = new Size(114, 32),
+            Location = new Point(212, 72),
             FlatStyle = FlatStyle.Flat,
             ForeColor = Color.FromArgb(110, 110, 110),
             Cursor = Cursors.Hand,
@@ -112,6 +111,8 @@ class ToastForm : Form
 
     public void ShowToast()
     {
+        var wa = Screen.PrimaryScreen!.WorkingArea;
+        Location = new Point(wa.Right - Width - 16, wa.Bottom - Height - 16);
         Show();
         _fadeTimer.Start();
         _lifeTimer.Start();

@@ -14,9 +14,11 @@ class SettingsForm : Form
         _store = store;
         var c = store.Config;
 
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         Text = "设置";
         StartPosition = FormStartPosition.CenterScreen;
-        Size = new Size(340, 400);
+        ClientSize = new Size(360, 380);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
@@ -81,8 +83,8 @@ class SettingsForm : Form
         {
             Minimum = min, Maximum = max,
             Value = Math.Clamp(value, min, max),
-            Location = new Point(200, y),
-            Size = new Size(100, 28),
+            Location = new Point(220, y),
+            Size = new Size(110, 28),
         };
         Controls.Add(lbl);
         Controls.Add(num);
