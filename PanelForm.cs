@@ -22,27 +22,28 @@ class PanelForm : Form
         StartPosition = FormStartPosition.Manual;
         ShowInTaskbar = false;
         TopMost = true;
-        BackColor = Color.White;
+        PaperTheme.Style(this);
         Size = new Size(320, 176);
         Font = new Font("Microsoft YaHei UI", 9f);
 
         var header = new Label
         {
             Text = "今日饮水",
-            ForeColor = Color.FromArgb(110, 110, 110),
+            ForeColor = PaperTheme.InkLight,
             AutoSize = true,
             Location = new Point(16, 14),
         };
         _progressText.Font = new Font("Microsoft YaHei UI", 12f, FontStyle.Bold);
+        _progressText.ForeColor = PaperTheme.Ink;
         _progressText.AutoSize = true;
         _progressText.Location = new Point(120, 10);
 
         _progressBar.Location = new Point(16, 44);
         _progressBar.Size = new Size(288, 8);
-        _progressBar.BackColor = Color.FromArgb(240, 240, 240);
+        _progressBar.BackColor = PaperTheme.Track;
         _progressFill.Location = new Point(0, 0);
         _progressFill.Size = new Size(0, 8);
-        _progressFill.BackColor = Color.FromArgb(55, 138, 221);
+        _progressFill.BackColor = PaperTheme.Accent;
         _progressBar.Controls.Add(_progressFill);
 
         int y = 66;
@@ -60,35 +61,23 @@ class PanelForm : Form
 
         _statusText.AutoSize = true;
         _statusText.Location = new Point(16, y + 44);
-        _statusText.ForeColor = Color.FromArgb(110, 110, 110);
+        _statusText.ForeColor = PaperTheme.InkLight;
         _statusText.Cursor = Cursors.Hand;
         _statusText.Click += (_, _) => { _store.AddStand(); Refresh_(); };
 
         _nextMedText.AutoSize = true;
         _nextMedText.Location = new Point(16, y + 68);
-        _nextMedText.ForeColor = Color.FromArgb(110, 110, 110);
+        _nextMedText.ForeColor = PaperTheme.AccentInk;
 
         Controls.AddRange(new Control[] { header, _progressText, _progressBar, _statusText, _nextMedText });
 
-        Paint += (_, e) => e.Graphics.DrawRectangle(
-            new Pen(Color.FromArgb(210, 210, 210)), 0, 0, Width - 1, Height - 1);
+        PaperTheme.MakePaperCard(this);
 
         Deactivate += (_, _) => Hide();
     }
 
-    static Button MakeButton(string text, Point loc, Size size)
-    {
-        var b = new Button
-        {
-            Text = text,
-            Location = loc,
-            Size = size,
-            FlatStyle = FlatStyle.Flat,
-            Cursor = Cursors.Hand,
-        };
-        b.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
-        return b;
-    }
+    static Button MakeButton(string text, Point loc, Size size) =>
+        PaperTheme.PaperButton(text, loc, size);
 
     void CustomAmount()
     {
@@ -104,13 +93,16 @@ class PanelForm : Form
             MinimizeBox = false,
             Font = Font,
         };
+        PaperTheme.Style(dlg);
         var num = new NumericUpDown
         {
             Minimum = 10, Maximum = 2000, Value = _store.Config.CupMl, Increment = 50,
             Location = new Point(16, 16), Size = new Size(120, 28),
+            BackColor = PaperTheme.Field, ForeColor = PaperTheme.Ink,
         };
         var lbl = new Label { Text = "ml", AutoSize = true, Location = new Point(142, 19) };
-        var ok = new Button { Text = "记录", DialogResult = DialogResult.OK, Location = new Point(16, 54), Size = new Size(90, 28) };
+        var ok = PaperTheme.PaperButton("记录", new Point(16, 54), new Size(90, 28), accent: true);
+        ok.DialogResult = DialogResult.OK;
         dlg.Controls.AddRange(new Control[] { num, lbl, ok });
         dlg.AcceptButton = ok;
         if (dlg.ShowDialog() == DialogResult.OK)

@@ -19,26 +19,31 @@ class StatsForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
-        BackColor = Color.White;
+        PaperTheme.Style(this);
+        Paint += (_, e) => PaperTheme.PaintGrain(this, e.Graphics);
 
         _summary.AutoSize = true;
         _summary.Location = new Point(20, 16);
         _summary.Font = new Font("Microsoft YaHei UI", 10f);
+        _summary.ForeColor = PaperTheme.Ink;
 
         _chart.Location = new Point(20, 70);
         _chart.Size = new Size(400, 170);
+        _chart.BackColor = PaperTheme.Bg;
         _chart.Paint += DrawChart;
 
         var listLabel = new Label
         {
             Text = "今日记录",
-            ForeColor = Color.FromArgb(110, 110, 110),
+            ForeColor = PaperTheme.InkLight,
             AutoSize = true,
             Location = new Point(20, 252),
         };
         _list.Location = new Point(20, 276);
         _list.Size = new Size(400, 100);
         _list.BorderStyle = BorderStyle.FixedSingle;
+        _list.BackColor = PaperTheme.Field;
+        _list.ForeColor = PaperTheme.Ink;
 
         Controls.AddRange(new Control[] { _summary, _chart, listLabel, _list });
         Load += (_, _) => RefreshStats();
@@ -81,9 +86,10 @@ class StatsForm : Form
 
         // 目标线
         int goalY = labelH + (int)((h - labelH - 20) * (1 - (double)goal / maxMl));
-        using var dashPen = new Pen(Color.FromArgb(200, 200, 200)) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+        using var dashPen = new Pen(PaperTheme.Border) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+        using var inkBrush = new SolidBrush(PaperTheme.InkLight);
         g.DrawLine(dashPen, 0, goalY, w, goalY);
-        g.DrawString($"目标 {goal}", Font, Brushes.Gray, 0, goalY - 18);
+        g.DrawString($"目标 {goal}", Font, inkBrush, 0, goalY - 18);
 
         for (int i = 0; i < 7; i++)
         {
@@ -91,13 +97,11 @@ class StatsForm : Form
             int barH = (int)((h - labelH - 20) * (double)days[i].Ml / maxMl);
             int y = h - 20 - barH;
             bool met = days[i].Ml >= goal;
-            using var brush = new SolidBrush(met
-                ? Color.FromArgb(55, 138, 221)
-                : Color.FromArgb(181, 212, 244));
+            using var brush = new SolidBrush(met ? PaperTheme.Accent : PaperTheme.AccentPale);
             if (barH > 0) g.FillRectangle(brush, x, y, barW, barH);
             var labelFont = days[i].IsToday ? new Font(Font, FontStyle.Bold) : Font;
             var size = g.MeasureString(days[i].Label, labelFont);
-            g.DrawString(days[i].Label, labelFont, Brushes.Gray, x + (barW - size.Width) / 2, h - 18);
+            g.DrawString(days[i].Label, labelFont, inkBrush, x + (barW - size.Width) / 2, h - 18);
         }
     }
 }

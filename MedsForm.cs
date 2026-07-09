@@ -18,12 +18,13 @@ class MedsForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
-        BackColor = Color.White;
+        PaperTheme.Style(this);
+        Paint += (_, e) => PaperTheme.PaintGrain(this, e.Graphics);
 
         var hint = new Label
         {
             Text = "到点会弹气泡提醒，点\"已吃了\"前每 10 分钟催一次",
-            ForeColor = Color.FromArgb(110, 110, 110),
+            ForeColor = PaperTheme.InkLight,
             AutoSize = true,
             Location = new Point(20, 14),
         };
@@ -32,6 +33,8 @@ class MedsForm : Form
         _list.Size = new Size(340, 190);
         _list.BorderStyle = BorderStyle.FixedSingle;
         _list.Font = new Font("Microsoft YaHei UI", 10f);
+        _list.BackColor = PaperTheme.Field;
+        _list.ForeColor = PaperTheme.Ink;
 
         var bAdd = MakeButton("添加", new Point(20, 246));
         bAdd.Click += (_, _) => AddOrEdit(null);
@@ -54,19 +57,8 @@ class MedsForm : Form
         RefreshList();
     }
 
-    static Button MakeButton(string text, Point loc)
-    {
-        var b = new Button
-        {
-            Text = text,
-            Location = loc,
-            Size = new Size(88, 30),
-            FlatStyle = FlatStyle.Flat,
-            Cursor = Cursors.Hand,
-        };
-        b.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
-        return b;
-    }
+    static Button MakeButton(string text, Point loc) =>
+        PaperTheme.PaperButton(text, loc, new Size(88, 30));
 
     MedSchedule? Selected() =>
         _list.SelectedIndex >= 0 && _list.SelectedIndex < _store.Config.Meds.Count
@@ -96,32 +88,29 @@ class MedsForm : Form
             MinimizeBox = false,
             Font = Font,
         };
+        PaperTheme.Style(dlg);
         var lblName = new Label { Text = "药名", AutoSize = true, Location = new Point(20, 20) };
-        var tbName = new TextBox { Location = new Point(90, 16), Size = new Size(210, 28), Text = existing?.Name ?? "" };
+        var tbName = new TextBox
+        {
+            Location = new Point(90, 16), Size = new Size(210, 28), Text = existing?.Name ?? "",
+            BackColor = PaperTheme.Field, ForeColor = PaperTheme.Ink, BorderStyle = BorderStyle.FixedSingle,
+        };
         var lblTimes = new Label { Text = "提醒时间", AutoSize = true, Location = new Point(20, 58) };
         var tbTimes = new TextBox
         {
             Location = new Point(90, 54),
             Size = new Size(210, 28),
             Text = existing != null ? string.Join(", ", existing.Times) : "08:00, 21:00",
+            BackColor = PaperTheme.Field, ForeColor = PaperTheme.Ink, BorderStyle = BorderStyle.FixedSingle,
         };
         var lblHint = new Label
         {
             Text = "多个时间用逗号分隔，24 小时制",
-            ForeColor = Color.FromArgb(110, 110, 110),
+            ForeColor = PaperTheme.InkLight,
             AutoSize = true,
             Location = new Point(90, 86),
         };
-        var ok = new Button
-        {
-            Text = "保存",
-            Location = new Point(90, 118),
-            Size = new Size(100, 30),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(230, 241, 251),
-            ForeColor = Color.FromArgb(12, 68, 124),
-        };
-        ok.FlatAppearance.BorderColor = Color.FromArgb(181, 212, 244);
+        var ok = PaperTheme.PaperButton("保存", new Point(90, 118), new Size(100, 30), accent: true);
         ok.Click += (_, _) =>
         {
             string name = tbName.Text.Trim();

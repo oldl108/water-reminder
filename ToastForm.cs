@@ -35,7 +35,7 @@ class ToastForm : Form
         StartPosition = FormStartPosition.Manual;
         ShowInTaskbar = false;
         TopMost = true;
-        BackColor = Color.White;
+        PaperTheme.Style(this);
         Size = new Size(340, 116);
         Font = new Font("Microsoft YaHei UI", 9f);
 
@@ -43,45 +43,27 @@ class ToastForm : Form
         {
             Text = titleText,
             Font = new Font("Microsoft YaHei UI", 10.5f, FontStyle.Bold),
+            ForeColor = PaperTheme.Ink,
             AutoSize = true,
             Location = new Point(14, 12),
         };
         var body = new Label
         {
             Text = bodyText,
-            ForeColor = Color.FromArgb(110, 110, 110),
+            ForeColor = PaperTheme.InkLight,
             AutoSize = true,
             Location = new Point(15, 40),
         };
-        var btnDrank = new Button
-        {
-            Text = okText,
-            Size = new Size(190, 32),
-            Location = new Point(14, 72),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(230, 241, 251),
-            ForeColor = Color.FromArgb(12, 68, 124),
-            Cursor = Cursors.Hand,
-        };
-        btnDrank.FlatAppearance.BorderColor = Color.FromArgb(181, 212, 244);
+        var btnDrank = PaperTheme.PaperButton(okText, new Point(14, 72), new Size(190, 32), accent: true);
         btnDrank.Click += (_, _) => { Confirmed?.Invoke(); CloseToast(); };
 
-        var btnLater = new Button
-        {
-            Text = "稍后",
-            Size = new Size(114, 32),
-            Location = new Point(212, 72),
-            FlatStyle = FlatStyle.Flat,
-            ForeColor = Color.FromArgb(110, 110, 110),
-            Cursor = Cursors.Hand,
-        };
-        btnLater.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
+        var btnLater = PaperTheme.PaperButton("稍后", new Point(212, 72), new Size(114, 32));
+        btnLater.ForeColor = PaperTheme.InkLight;
         btnLater.Click += (_, _) => { Snoozed?.Invoke(); CloseToast(); };
 
         Controls.AddRange(new Control[] { title, body, btnDrank, btnLater });
 
-        Paint += (_, e) => e.Graphics.DrawRectangle(
-            new Pen(Color.FromArgb(210, 210, 210)), 0, 0, Width - 1, Height - 1);
+        PaperTheme.MakePaperCard(this);
 
         Opacity = 0;
         _fadeTimer.Interval = 30;

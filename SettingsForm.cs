@@ -22,7 +22,8 @@ class SettingsForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
-        BackColor = Color.White;
+        PaperTheme.Style(this);
+        Paint += (_, e) => PaperTheme.PaintGrain(this, e.Graphics);
 
         int y = 20;
         var interval = AddRow("提醒间隔（分钟）", c.IntervalMinutes, 10, 240, ref y);
@@ -49,16 +50,7 @@ class SettingsForm : Form
         };
         y += 36;
 
-        var save = new Button
-        {
-            Text = "保存",
-            Size = new Size(120, 32),
-            Location = new Point(20, y),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(230, 241, 251),
-            ForeColor = Color.FromArgb(12, 68, 124),
-        };
-        save.FlatAppearance.BorderColor = Color.FromArgb(181, 212, 244);
+        var save = PaperTheme.PaperButton("保存", new Point(20, y), new Size(120, 32), accent: true);
         save.Click += (_, _) =>
         {
             c.IntervalMinutes = (int)interval.Value;
@@ -85,6 +77,8 @@ class SettingsForm : Form
             Value = Math.Clamp(value, min, max),
             Location = new Point(220, y),
             Size = new Size(110, 28),
+            BackColor = PaperTheme.Field,
+            ForeColor = PaperTheme.Ink,
         };
         Controls.Add(lbl);
         Controls.Add(num);
