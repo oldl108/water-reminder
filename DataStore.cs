@@ -13,6 +13,14 @@ class AppConfig
     public int ActiveEndHour { get; set; } = 23;
     public int IdleResetMinutes { get; set; } = 10;
     public bool DeferWhenFullscreen { get; set; } = false;
+    public int MedNagMinutes { get; set; } = 10;
+    public List<MedSchedule> Meds { get; set; } = new();
+}
+
+class MedSchedule
+{
+    public string Name { get; set; } = "";
+    public List<string> Times { get; set; } = new();
 }
 
 class WaterEntry
@@ -21,10 +29,18 @@ class WaterEntry
     [JsonPropertyName("ml")] public int Ml { get; set; }
 }
 
+class MedEntry
+{
+    public string Name { get; set; } = "";
+    public string Sched { get; set; } = "";
+    public string TakenAt { get; set; } = "";
+}
+
 class DayRecord
 {
     public List<WaterEntry> Water { get; set; } = new();
     public int Stands { get; set; }
+    public List<MedEntry> Meds { get; set; } = new();
 
     [JsonIgnore] public int TotalMl => Water.Sum(w => w.Ml);
 }
@@ -83,6 +99,22 @@ class DataStore
     {
         Today().Stands++;
         SaveData();
+    }
+
+    public void AddMedTaken(string name, string sched)
+    {
+        Today().Meds.Add(new MedEntry { Name = name, Sched = sched, TakenAt = DateTime.Now.ToString("HH:mm") });
+        SaveData();
+    }
+
+    public bool IsMedTaken(string name, string sched) =>
+        Today().Meds.Any(m => m.Name == name && m.Sched == sched);
+
+    /// <summary>调试日志，方便排查"提醒到底弹没弹"。</summary>
+    public void Log(string msg)
+    {
+        try { File.AppendAllText(Path.Combine(Dir, "log.txt"), $"{DateTime.Now:MM-dd HH:mm:ss} {msg}\r\n"); }
+        catch { }
     }
 
     public DayRecord? Day(DateTime date) =>

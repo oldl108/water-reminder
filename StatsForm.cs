@@ -51,9 +51,11 @@ class StatsForm : Form
         _summary.Text = $"今日 {today.TotalMl} / {goal} ml    站起活动 {today.Stands} 次";
 
         _list.Items.Clear();
+        foreach (var m in Enumerable.Reverse(today.Meds))
+            _list.Items.Add($"{m.TakenAt}    💊 {m.Name}（{m.Sched} 那顿）");
         foreach (var e in Enumerable.Reverse(today.Water))
             _list.Items.Add($"{e.Time}    {e.Ml} ml");
-        if (today.Water.Count == 0) _list.Items.Add("（还没有记录）");
+        if (today.Water.Count == 0 && today.Meds.Count == 0) _list.Items.Add("（还没有记录）");
 
         _chart.Invalidate();
     }

@@ -6,7 +6,7 @@ namespace WaterReminder;
 /// </summary>
 class ToastForm : Form
 {
-    public event Action? Drank;
+    public event Action? Confirmed;
     public event Action? Snoozed;
 
     readonly System.Windows.Forms.Timer _lifeTimer = new();
@@ -27,7 +27,7 @@ class ToastForm : Form
         }
     }
 
-    public ToastForm(int sitMinutes, int cupMl)
+    public ToastForm(string titleText, string bodyText, string okText)
     {
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
@@ -41,23 +41,21 @@ class ToastForm : Form
 
         var title = new Label
         {
-            Text = "💧 该喝口水了",
+            Text = titleText,
             Font = new Font("Microsoft YaHei UI", 10.5f, FontStyle.Bold),
             AutoSize = true,
             Location = new Point(14, 12),
         };
         var body = new Label
         {
-            Text = sitMinutes > 0
-                ? $"已经坐了 {sitMinutes} 分钟，顺便站起来动一动"
-                : "喝口水，顺便站起来动一动",
+            Text = bodyText,
             ForeColor = Color.FromArgb(110, 110, 110),
             AutoSize = true,
             Location = new Point(15, 40),
         };
         var btnDrank = new Button
         {
-            Text = $"已喝 +{cupMl}ml",
+            Text = okText,
             Size = new Size(190, 32),
             Location = new Point(14, 72),
             FlatStyle = FlatStyle.Flat,
@@ -66,7 +64,7 @@ class ToastForm : Form
             Cursor = Cursors.Hand,
         };
         btnDrank.FlatAppearance.BorderColor = Color.FromArgb(181, 212, 244);
-        btnDrank.Click += (_, _) => { Drank?.Invoke(); CloseToast(); };
+        btnDrank.Click += (_, _) => { Confirmed?.Invoke(); CloseToast(); };
 
         var btnLater = new Button
         {

@@ -14,13 +14,12 @@ class TrayContext : ApplicationContext
     bool _wasAway;
     ToastForm? _toast;
     StatsForm? _stats;
+    MedsForm? _meds;
+    readonly Dictionary<string, DateTime> _medNagAt = new();
 
     public TrayContext()
     {
         _panel = new PanelForm(_store, OnWaterRecorded);
-        _panel.PauseRequested += () => PauseFor(TimeSpan.FromHours(1));
-        _panel.StatsRequested += ShowStats;
-        _panel.SettingsRequested += ShowSettings;
 
         _tray.Icon = MakeDropIcon();
         _tray.Text = "喝水提醒";
@@ -30,11 +29,22 @@ class TrayContext : ApplicationContext
         var menu = new ContextMenuStrip();
         menu.Items.Add("记录 / 查看面板", null, (_, _) => _panel.ShowNearTray());
         menu.Items.Add("统计", null, (_, _) => ShowStats());
+        menu.Items.Add("吃药提醒…", null, (_, _) => ShowMeds());
         menu.Items.Add("设置", null, (_, _) => ShowSettings());
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("暂停提醒 1 小时", null, (_, _) => PauseFor(TimeSpan.FromHours(1)));
-        menu.Items.Add("恢复提醒", null, (_, _) => { _pausedUntil = DateTime.MinValue; ScheduleNext(); Notify("提醒已恢复"); });
-        menu.Items.Add("测试提醒（5 秒后弹出，可先切回游戏）", null, (_, _) =>
+        var pauseItem = new ToolStripMenuItem("暂停提醒 1 小时");
+        pauseItem.Click += (_, _) =>
+        {
+            if (DateTime.Now < _pausedUntil)
+            {
+                _pausedUntil = DateTime.MinValue;
+                ScheduleNext();
+                Notify("提醒已恢复");
+            }
+            else PauseFor(TimeSpan.FromHours(1));
+        };
+        menu.Items.Add(pauseItem);
+        menu.Items.Add("测试提醒（5 秒后弹出）", null, (_, _) =>
         {
             var t = new System.Windows.Forms.Timer { Interval = 5000 };
             t.Tick += (_, _) =>
@@ -46,6 +56,9 @@ class TrayContext : ApplicationContext
         });
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => Exit());
+        menu.Opening += (_, _) => pauseItem.Text = DateTime.Now < _pausedUntil
+            ? $"恢复提醒（已暂停到 {_pausedUntil:HH:mm}）"
+            : "暂停提醒 1 小时";
         _tray.ContextMenuStrip = menu;
 
         ScheduleNext();
@@ -74,15 +87,44 @@ class TrayContext : ApplicationContext
             return;
         }
 
-        if (now < _pausedUntil || now < _nextReminderAt) return;
-        if (!InActiveHours(now)) return;
         if (_toast != null && !_toast.IsDisposed) return;
 
-        // 全屏延后：不改 _nextReminderAt，每 30 秒重查一次，退出全屏后很快补弹
+        // 全屏延后：每 30 秒重查一次，退出全屏后很快补弹
         if (_store.Config.DeferWhenFullscreen && NativeMethods.IsForegroundFullscreen())
             return;
 
+        // 吃药提醒优先，且无视暂停和提醒时段
+        if (CheckMeds(now)) return;
+
+        if (now < _pausedUntil || now < _nextReminderAt) return;
+        if (!InActiveHours(now)) return;
+
         ShowToast();
+    }
+
+    /// <summary>有到点没吃的药就弹提醒；一次只弹一条。</summary>
+    bool CheckMeds(DateTime now)
+    {
+        foreach (var med in _store.Config.Meds)
+        {
+            foreach (var t in med.Times)
+            {
+                if (!TimeOnly.TryParse(t, out var tod)) continue;
+                if (now < DateTime.Today.Add(tod.ToTimeSpan())) continue;
+                if (_store.IsMedTaken(med.Name, t)) continue;
+                string key = $"{med.Name}|{t}";
+                if (_medNagAt.TryGetValue(key, out var nagAt) && now < nagAt) continue;
+
+                _store.Log($"弹出吃药提醒：{med.Name} {t}");
+                _toast = new ToastForm("💊 该吃药了", $"{med.Name}（{t} 这一顿）", "已吃了");
+                _toast.Confirmed += () => { _store.AddMedTaken(med.Name, t); _medNagAt.Remove(key); _store.Log($"已确认吃药：{med.Name} {t}"); };
+                _toast.Snoozed += () => _medNagAt[key] = DateTime.Now.AddMinutes(_store.Config.MedNagMinutes);
+                _toast.FormClosed += (_, _) => _toast = null;
+                _toast.ShowToast();
+                return true;
+            }
+        }
+        return false;
     }
 
     bool InActiveHours(DateTime now)
@@ -95,8 +137,12 @@ class TrayContext : ApplicationContext
     void ShowToast()
     {
         int sitMinutes = (int)(DateTime.Now - _sitStartAt).TotalMinutes;
-        _toast = new ToastForm(sitMinutes, _store.Config.CupMl);
-        _toast.Drank += () =>
+        string body = sitMinutes > 0
+            ? $"已经坐了 {sitMinutes} 分钟，顺便站起来动一动"
+            : "喝口水，顺便站起来动一动";
+        _store.Log($"弹出喝水提醒（已坐 {sitMinutes} 分钟）");
+        _toast = new ToastForm("💧 该喝口水了", body, $"已喝 +{_store.Config.CupMl}ml");
+        _toast.Confirmed += () =>
         {
             _store.AddWater(_store.Config.CupMl);
             _store.AddStand();          // 起身接水，顺便算一次活动
@@ -135,6 +181,13 @@ class TrayContext : ApplicationContext
         if (_stats == null || _stats.IsDisposed) _stats = new StatsForm(_store);
         _stats.Show();
         _stats.Activate();
+    }
+
+    void ShowMeds()
+    {
+        if (_meds == null || _meds.IsDisposed) _meds = new MedsForm(_store);
+        _meds.Show();
+        _meds.Activate();
     }
 
     void ShowSettings()

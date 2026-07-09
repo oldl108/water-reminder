@@ -32,6 +32,9 @@ static class NativeMethods
     [DllImport("user32.dll")]
     static extern IntPtr GetDesktopWindow();
 
+    [DllImport("user32.dll")]
+    static extern bool IsZoomed(IntPtr hWnd);
+
     public const int WS_EX_NOACTIVATE = 0x08000000;
     public const int WS_EX_TOOLWINDOW = 0x00000080;
     public const int WS_EX_TOPMOST = 0x00000008;
@@ -44,11 +47,12 @@ static class NativeMethods
         return TimeSpan.FromMilliseconds(unchecked(Environment.TickCount - (int)info.dwTime));
     }
 
-    /// <summary>前台程序是否全屏独占（游戏、全屏视频）。</summary>
+    /// <summary>前台程序是否全屏独占（游戏、全屏视频）。最大化的普通窗口不算。</summary>
     public static bool IsForegroundFullscreen()
     {
         IntPtr fg = GetForegroundWindow();
         if (fg == IntPtr.Zero || fg == GetShellWindow() || fg == GetDesktopWindow()) return false;
+        if (IsZoomed(fg)) return false;
         if (!GetWindowRect(fg, out RECT r)) return false;
         var screen = Screen.FromPoint(new Point((r.Left + r.Right) / 2, (r.Top + r.Bottom) / 2)).Bounds;
         return r.Left <= screen.Left && r.Top <= screen.Top

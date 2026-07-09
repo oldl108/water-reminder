@@ -1,6 +1,6 @@
 namespace WaterReminder;
 
-/// <summary>点击托盘图标弹出的快捷记录面板，失焦自动收起。</summary>
+/// <summary>点击托盘图标弹出的快捷记录面板，失焦自动收起。保持极简：进度 + 快捷记录 + 一行状态。</summary>
 class PanelForm : Form
 {
     readonly DataStore _store;
@@ -8,7 +8,8 @@ class PanelForm : Form
     readonly Label _progressText = new();
     readonly Panel _progressBar = new();
     readonly Panel _progressFill = new();
-    readonly Label _standText = new();
+    readonly Label _statusText = new();
+    readonly Label _nextMedText = new();
 
     public PanelForm(DataStore store, Action onChanged)
     {
@@ -22,7 +23,7 @@ class PanelForm : Form
         ShowInTaskbar = false;
         TopMost = true;
         BackColor = Color.White;
-        Size = new Size(320, 224);
+        Size = new Size(320, 176);
         Font = new Font("Microsoft YaHei UI", 9f);
 
         var header = new Label
@@ -35,7 +36,6 @@ class PanelForm : Form
         _progressText.Font = new Font("Microsoft YaHei UI", 12f, FontStyle.Bold);
         _progressText.AutoSize = true;
         _progressText.Location = new Point(120, 10);
-        _progressText.TextAlign = ContentAlignment.MiddleRight;
 
         _progressBar.Location = new Point(16, 44);
         _progressBar.Size = new Size(288, 8);
@@ -58,32 +58,23 @@ class PanelForm : Form
         bCustom.Click += (_, _) => CustomAmount();
         Controls.Add(bCustom);
 
-        _standText.AutoSize = true;
-        _standText.Location = new Point(16, y + 46);
-        _standText.ForeColor = Color.FromArgb(110, 110, 110);
+        _statusText.AutoSize = true;
+        _statusText.Location = new Point(16, y + 44);
+        _statusText.ForeColor = Color.FromArgb(110, 110, 110);
+        _statusText.Cursor = Cursors.Hand;
+        _statusText.Click += (_, _) => { _store.AddStand(); Refresh_(); };
 
-        var bStand = MakeButton("站起活动 +1", new Point(194, y + 40), new Size(110, 30));
-        bStand.Click += (_, _) => { _store.AddStand(); Refresh_(); };
-        Controls.Add(bStand);
+        _nextMedText.AutoSize = true;
+        _nextMedText.Location = new Point(16, y + 68);
+        _nextMedText.ForeColor = Color.FromArgb(110, 110, 110);
 
-        var bPause = MakeButton("暂停提醒 1 小时", new Point(16, y + 82), new Size(132, 30));
-        bPause.Click += (_, _) => { PauseRequested?.Invoke(); Hide(); };
-        var bStats = MakeButton("统计", new Point(156, y + 82), new Size(70, 30));
-        bStats.Click += (_, _) => { StatsRequested?.Invoke(); Hide(); };
-        var bSettings = MakeButton("设置", new Point(234, y + 82), new Size(70, 30));
-        bSettings.Click += (_, _) => { SettingsRequested?.Invoke(); Hide(); };
-
-        Controls.AddRange(new Control[] { header, _progressText, _progressBar, _standText, bPause, bStats, bSettings });
+        Controls.AddRange(new Control[] { header, _progressText, _progressBar, _statusText, _nextMedText });
 
         Paint += (_, e) => e.Graphics.DrawRectangle(
             new Pen(Color.FromArgb(210, 210, 210)), 0, 0, Width - 1, Height - 1);
 
         Deactivate += (_, _) => Hide();
     }
-
-    public event Action? PauseRequested;
-    public event Action? StatsRequested;
-    public event Action? SettingsRequested;
 
     static Button MakeButton(string text, Point loc, Size size)
     {
@@ -138,7 +129,30 @@ class PanelForm : Form
         _progressText.Location = new Point(Width - 16 - _progressText.PreferredWidth, 10);
         _progressFill.Width = Math.Min(_progressBar.Width,
             (int)(_progressBar.Width * Math.Min(1.0, (double)today.TotalMl / Math.Max(1, goal))));
-        _standText.Text = $"今日站起活动：{today.Stands} 次";
+
+        int medTotal = _store.Config.Meds.Sum(m => m.Times.Count);
+        string medPart = medTotal > 0 ? $" · 吃药 {today.Meds.Count}/{medTotal}" : "";
+        _statusText.Text = $"站起活动 {today.Stands} 次（点我 +1）{medPart}";
+
+        _nextMedText.Text = NextMedLine();
+        _nextMedText.Visible = _nextMedText.Text.Length > 0;
+    }
+
+    string NextMedLine()
+    {
+        var now = TimeOnly.FromDateTime(DateTime.Now);
+        (string Name, TimeOnly At)? next = null;
+        foreach (var med in _store.Config.Meds)
+            foreach (var t in med.Times)
+            {
+                if (!TimeOnly.TryParse(t, out var tod)) continue;
+                if (_store.IsMedTaken(med.Name, t)) continue;
+                if (next == null || tod < next.Value.At) next = (med.Name, tod);
+            }
+        if (next == null) return "";
+        return next.Value.At <= now
+            ? $"待吃：{next.Value.Name}（{next.Value.At:HH:mm} 那顿）"
+            : $"下一顿：{next.Value.Name} {next.Value.At:HH:mm}";
     }
 
     public void ShowNearTray()
