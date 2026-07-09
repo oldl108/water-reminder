@@ -45,6 +45,7 @@ class DataStore
         Directory.CreateDirectory(Dir);
         Config = Load<AppConfig>(ConfigPath) ?? new AppConfig();
         Days = Load<Dictionary<string, DayRecord>>(DataPath) ?? new();
+        if (!File.Exists(ConfigPath)) SaveConfig();
     }
 
     static T? Load<T>(string path) where T : class
