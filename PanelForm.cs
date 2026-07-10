@@ -23,7 +23,7 @@ class PanelForm : Form
         ShowInTaskbar = false;
         TopMost = true;
         PaperTheme.Style(this);
-        Size = new Size(320, 176);
+        Size = new Size(344, 176);
         Font = new Font("Microsoft YaHei UI", 9f);
 
         var header = new Label
@@ -39,7 +39,7 @@ class PanelForm : Form
         _progressText.Location = new Point(120, 10);
 
         _progressBar.Location = new Point(16, 44);
-        _progressBar.Size = new Size(288, 8);
+        _progressBar.Size = new Size(312, 8);
         _progressBar.BackColor = PaperTheme.Track;
         _progressFill.Location = new Point(0, 0);
         _progressFill.Size = new Size(0, 8);
@@ -51,11 +51,11 @@ class PanelForm : Form
         for (int i = 0; i < amounts.Length; i++)
         {
             int ml = amounts[i];
-            var b = MakeButton($"+{ml}", new Point(16 + i * 74, y), new Size(66, 30));
+            var b = MakeButton($"+{ml}", new Point(16 + i * 80, y), new Size(72, 30));
             b.Click += (_, _) => { _store.AddWater(ml); Refresh_(); _onChanged(); };
             Controls.Add(b);
         }
-        var bCustom = MakeButton("…", new Point(16 + 3 * 74, y), new Size(66, 30));
+        var bCustom = MakeButton("…", new Point(16 + 3 * 80, y), new Size(72, 30));
         bCustom.Click += (_, _) => CustomAmount();
         Controls.Add(bCustom);
 
@@ -73,8 +73,11 @@ class PanelForm : Form
 
         PaperTheme.MakePaperCard(this);
 
-        Deactivate += (_, _) => Hide();
+        Deactivate += (_, _) => { if (!KeepOpen) Hide(); };
     }
+
+    /// <summary>陈列模式用：失焦不收起。</summary>
+    public bool KeepOpen { get; set; }
 
     static Button MakeButton(string text, Point loc, Size size) =>
         PaperTheme.PaperButton(text, loc, size);
@@ -124,7 +127,7 @@ class PanelForm : Form
 
         int medTotal = _store.Config.Meds.Sum(m => m.Times.Count);
         string medPart = medTotal > 0 ? $" · 吃药 {today.Meds.Count}/{medTotal}" : "";
-        _statusText.Text = $"站起活动 {today.Stands} 次（点我 +1）{medPart}";
+        _statusText.Text = $"站起 {today.Stands} 次（点我+1）{medPart}";
 
         _nextMedText.Text = NextMedLine();
         _nextMedText.Visible = _nextMedText.Text.Length > 0;
@@ -149,9 +152,14 @@ class PanelForm : Form
 
     public void ShowNearTray()
     {
-        Refresh_();
         var wa = Screen.PrimaryScreen!.WorkingArea;
-        Location = new Point(wa.Right - Width - 8, wa.Bottom - Height - 8);
+        ShowAt(new Point(wa.Right - Width - 8, wa.Bottom - Height - 8));
+    }
+
+    public void ShowAt(Point location)
+    {
+        Refresh_();
+        Location = location;
         Show();
         Activate();
     }

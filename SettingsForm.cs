@@ -18,7 +18,7 @@ class SettingsForm : Form
         AutoScaleMode = AutoScaleMode.Dpi;
         Text = "设置";
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(360, 380);
+        ClientSize = new Size(400, 380);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
@@ -74,7 +74,7 @@ class SettingsForm : Form
         {
             Minimum = min, Maximum = max,
             Value = Math.Clamp(value, min, max),
-            Location = new Point(220, y),
+            Location = new Point(250, y),
             Size = new Size(110, 28),
             BackColor = PaperTheme.Field,
             ForeColor = PaperTheme.Ink,

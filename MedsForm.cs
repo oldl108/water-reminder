@@ -21,7 +21,7 @@ class MedsForm : Form
 
         var hint = new Label
         {
-            Text = "到点会弹气泡提醒，点\"已吃了\"前每 10 分钟催一次",
+            Text = "到点弹气泡提醒，确认前每 10 分钟催一次",
             ForeColor = PaperTheme.InkLight,
             AutoSize = true,
             Location = new Point(20, 14),
