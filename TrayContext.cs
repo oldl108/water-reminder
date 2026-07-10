@@ -16,6 +16,8 @@ class TrayContext : ApplicationContext
     StatsForm? _stats;
     MedsForm? _meds;
     readonly Dictionary<string, DateTime> _medNagAt = new();
+    string? _bedtimeAckNight;
+    DateTime _bedtimeNagAt = DateTime.MinValue;
 
     public TrayContext()
     {
@@ -96,10 +98,46 @@ class TrayContext : ApplicationContext
         // 吃药提醒优先，且无视暂停和提醒时段
         if (CheckMeds(now)) return;
 
-        if (now < _pausedUntil || now < _nextReminderAt) return;
+        if (now < _pausedUntil) return;
+
+        // 早睡提醒在提醒时段之外（深夜）也要生效
+        if (CheckBedtime(now)) return;
+
+        if (now < _nextReminderAt) return;
         if (!InActiveHours(now)) return;
 
         ShowToast();
+    }
+
+    /// <summary>
+    /// 早睡提醒：周日～周四晚用工作日时间，周五、周六晚用周末时间
+    /// （按"第二天要不要上班"区分）。只提醒不记录，确认后当晚不再弹，
+    /// 忽略则每半小时温和再催，凌晨 4 点后自动停。
+    /// </summary>
+    bool CheckBedtime(DateTime now)
+    {
+        var c = _store.Config;
+        if (!c.BedtimeEnabled) return false;
+
+        var nightDate = now.Hour < 12 ? DateTime.Today.AddDays(-1) : DateTime.Today;
+        string nightKey = nightDate.ToString("yyyy-MM-dd");
+        if (_bedtimeAckNight == nightKey) return false;
+
+        bool restNight = nightDate.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday;
+        if (!TimeOnly.TryParse(restNight ? c.BedtimeRestday : c.BedtimeWorkday, out var bt)) return false;
+
+        var bedAt = nightDate.Add(bt.ToTimeSpan());
+        var endAt = nightDate.AddDays(1).AddHours(4);
+        if (now < bedAt || now >= endAt) return false;
+        if (now < _bedtimeNagAt) return false;
+
+        _store.Log("弹出早睡提醒");
+        _toast = new ToastForm("🌙 该睡觉了", $"已经 {now:HH:mm} 了，放下手头的事，早点休息", "知道了，这就睡");
+        _toast.Confirmed += () => { _bedtimeAckNight = nightKey; _store.Log("早睡提醒已确认"); };
+        _toast.Snoozed += () => _bedtimeNagAt = DateTime.Now.AddMinutes(c.BedtimeNagMinutes);
+        _toast.FormClosed += (_, _) => _toast = null;
+        _toast.ShowToast();
+        return true;
     }
 
     /// <summary>有到点没吃的药就弹提醒；一次只弹一条。</summary>

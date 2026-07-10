@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Win32;
 
 namespace WaterReminder;
@@ -18,7 +19,7 @@ class SettingsForm : Form
         AutoScaleMode = AutoScaleMode.Dpi;
         Text = "设置";
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(400, 424);
+        ClientSize = new Size(400, 530);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
@@ -46,7 +47,18 @@ class SettingsForm : Form
             AutoSize = true,
             Location = new Point(20, y),
         };
-        y += 36;
+        y += 34;
+
+        var bedtime = new CheckBox
+        {
+            Text = "早睡提醒（只提醒，不做记录）",
+            Checked = c.BedtimeEnabled,
+            AutoSize = true,
+            Location = new Point(20, y),
+        };
+        y += 32;
+        var bedWork = AddTimeRow("工作日晚上（周日～周四）", c.BedtimeWorkday, ref y);
+        var bedRest = AddTimeRow("周末晚上（周五、周六）", c.BedtimeRestday, ref y);
 
         var save = PaperTheme.PaperButton("保存", new Point(20, y), new Size(120, 32), accent: true);
         save.Click += (_, _) =>
@@ -58,6 +70,9 @@ class SettingsForm : Form
             c.ActiveStartHour = (int)start.Value;
             c.ActiveEndHour = (int)end.Value;
             c.DeferWhenFullscreen = fullscreen.Checked;
+            c.BedtimeEnabled = bedtime.Checked;
+            if (TimeOnly.TryParse(bedWork.Text.Trim(), out var tw)) c.BedtimeWorkday = tw.ToString("HH:mm");
+            if (TimeOnly.TryParse(bedRest.Text.Trim(), out var tr)) c.BedtimeRestday = tr.ToString("HH:mm");
             _store.SaveConfig();
             SetAutoStart(autostart.Checked);
             Close();
@@ -66,26 +81,50 @@ class SettingsForm : Form
         y += 46;
         var aboutLine = new Label
         {
-            Text = "早睡早起多喝水 v0.2.0",
+            Text = $"早睡早起多喝水 v{Application.ProductVersion}",
             ForeColor = PaperTheme.InkLight,
             AutoSize = true,
             Location = new Point(20, y),
         };
-        var authorLine = new Label
+        var authorLine = new LinkLabel
         {
             Text = "作者微信公众号：爱玩的果果",
-            ForeColor = PaperTheme.AccentInk,
             AutoSize = true,
             Location = new Point(20, y + 22),
+            LinkColor = PaperTheme.AccentInk,
+            ActiveLinkColor = PaperTheme.Accent,
+            LinkBehavior = LinkBehavior.HoverUnderline,
+            LinkArea = new LinkArea(8, 5),
         };
+        authorLine.LinkClicked += (_, _) => Process.Start(new ProcessStartInfo(
+            "https://mp.weixin.qq.com/s/1P3FnoMtXusX0BdnAk4lGA") { UseShellExecute = true });
         Paint += (_, e) =>
         {
             using var pen = new Pen(PaperTheme.Border);
             e.Graphics.DrawLine(pen, 20, aboutLine.Top - 10, ClientSize.Width - 20, aboutLine.Top - 10);
         };
 
-        Controls.AddRange(new Control[] { fullscreen, autostart, save, aboutLine, authorLine });
+        Controls.AddRange(new Control[] { fullscreen, autostart, bedtime, save, aboutLine, authorLine });
         PaperTheme.PaperWindow(this, "设置");
+    }
+
+    TextBox AddTimeRow(string label, string value, ref int y)
+    {
+        var lbl = new Label { Text = label, AutoSize = true, Location = new Point(20, y + 4) };
+        var tb = new TextBox
+        {
+            Text = value,
+            Location = new Point(280, y),
+            Size = new Size(80, 28),
+            TextAlign = HorizontalAlignment.Center,
+            BackColor = PaperTheme.Field,
+            ForeColor = PaperTheme.Ink,
+            BorderStyle = BorderStyle.FixedSingle,
+        };
+        Controls.Add(lbl);
+        Controls.Add(tb);
+        y += 36;
+        return tb;
     }
 
     NumericUpDown AddRow(string label, int value, int min, int max, ref int y)

@@ -8,10 +8,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>WaterReminder</RootNamespace>
     <AssemblyName>WaterReminder</AssemblyName>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Product>早睡早起多喝水</Product>
     <AssemblyTitle>早睡早起多喝水</AssemblyTitle>
     <Authors>爱玩的果果</Authors>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 

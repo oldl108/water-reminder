@@ -15,6 +15,10 @@ class AppConfig
     public bool DeferWhenFullscreen { get; set; } = false;
     public int MedNagMinutes { get; set; } = 10;
     public List<MedSchedule> Meds { get; set; } = new();
+    public bool BedtimeEnabled { get; set; } = true;
+    public string BedtimeWorkday { get; set; } = "23:00";
+    public string BedtimeRestday { get; set; } = "23:30";
+    public int BedtimeNagMinutes { get; set; } = 30;
 }
 
 class MedSchedule
