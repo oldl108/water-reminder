@@ -4,30 +4,49 @@ using System.Text.Json;
 namespace WaterReminder;
 
 /// <summary>
-/// 检查 GitHub Releases 上的最新版本。只在用户手动点"检查更新"时才联网，
-/// 平时程序不发任何网络请求。
+/// 检查最新版本。只在用户手动点"检查更新"时才联网，平时零网络请求。
+/// 数据源按国内可达性排序：自有服务器 → jsDelivr CDN → GitHub API。
+/// 下载走蓝奏云（国内快），GitHub Releases 作为备用。
 /// </summary>
 static class UpdateChecker
 {
-    const string Api = "https://api.github.com/repos/oldl108/water-reminder/releases/latest";
+    const string ServerUrl = "http://124.223.155.194/water/version.json";
+    const string JsdelivrUrl = "https://cdn.jsdelivr.net/gh/oldl108/water-reminder@main/version.json";
+    const string GithubApi = "https://api.github.com/repos/oldl108/water-reminder/releases/latest";
+    public const string LanzouPage = "https://gg999.lanzouv.com/s/heshui";
     public const string ReleasesPage = "https://github.com/oldl108/water-reminder/releases";
 
-    public record Result(Version Latest, string Page, string? ZipUrl);
+    public record Result(Version Latest, string DownloadUrl);
 
     public static async Task<Result?> FetchLatestAsync()
     {
-        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(6) };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("WaterReminder-UpdateCheck");
-        string json = await http.GetStringAsync(Api);
-        using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-        string tag = root.GetProperty("tag_name").GetString() ?? "";
-        string page = root.TryGetProperty("html_url", out var h) ? h.GetString() ?? ReleasesPage : ReleasesPage;
-        string? zip = null;
-        if (root.TryGetProperty("assets", out var assets) && assets.GetArrayLength() > 0)
-            zip = assets[0].GetProperty("browser_download_url").GetString();
-        if (!Version.TryParse(tag.TrimStart('v', 'V'), out var v)) return null;
-        return new Result(Normalize(v), page, zip);
+
+        foreach (var source in new[] { ServerUrl, JsdelivrUrl })
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(await http.GetStringAsync(source));
+                string tag = doc.RootElement.GetProperty("version").GetString() ?? "";
+                string url = doc.RootElement.TryGetProperty("url", out var u)
+                    ? u.GetString() ?? LanzouPage : LanzouPage;
+                if (Version.TryParse(tag.TrimStart('v', 'V'), out var v))
+                    return new Result(Normalize(v), url);
+            }
+            catch { }
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(await http.GetStringAsync(GithubApi));
+            string tag = doc.RootElement.GetProperty("tag_name").GetString() ?? "";
+            if (Version.TryParse(tag.TrimStart('v', 'V'), out var v))
+                return new Result(Normalize(v), LanzouPage);
+        }
+        catch { }
+
+        return null;
     }
 
     public static Version Current =>

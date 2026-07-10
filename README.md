@@ -6,8 +6,10 @@
 
 ## 下载
 
-到 [Releases](https://github.com/oldl108/water-reminder/releases) 页面下载最新的
-`WaterReminder-vX.X.X-win-x64.zip`，解压后双击 `WaterReminder.exe` 即可，
+- **国内推荐（蓝奏云）**：https://gg999.lanzouv.com/s/heshui
+- 备用（GitHub）：[Releases](https://github.com/oldl108/water-reminder/releases)
+
+下载 `WaterReminder-vX.X.X-win-x64.zip`，解压后双击 `WaterReminder.exe` 即可，
 免安装、无需 .NET 运行时（Windows 10/11 x64）。
 
 > 首次运行时 Windows SmartScreen 可能提示"已保护你的电脑"——因为程序没有付费的
@@ -39,7 +41,8 @@
 
 ## 更新
 
-设置窗口右下角「检查更新」：有新版本时给出下载链接，点开浏览器直接下载 zip 替换即可。
+设置窗口右下角「检查更新」：有新版本时弹出提示，打开蓝奏云下载页，下载 zip 替换即可。
+版本检查按国内可达性依次尝试：自有服务器 → jsDelivr → GitHub API。
 
 ## 数据
 
