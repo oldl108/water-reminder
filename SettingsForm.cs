@@ -98,13 +98,57 @@ class SettingsForm : Form
         };
         authorLine.LinkClicked += (_, _) => Process.Start(new ProcessStartInfo(
             "https://mp.weixin.qq.com/s/1P3FnoMtXusX0BdnAk4lGA") { UseShellExecute = true });
+
+        var update = PaperTheme.PaperButton("检查更新", new Point(272, y + 4), new Size(104, 30));
+        update.Click += async (_, _) =>
+        {
+            update.Enabled = false;
+            update.Text = "检查中…";
+            try
+            {
+                var latest = await UpdateChecker.FetchLatestAsync();
+                if (latest == null)
+                {
+                    MessageBox.Show(this, "没取到版本信息，稍后再试试。", "检查更新",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else if (latest.Latest > UpdateChecker.Current)
+                {
+                    if (MessageBox.Show(this,
+                        $"发现新版本 v{latest.Latest}（当前 v{UpdateChecker.Current}）。\n\n现在打开下载链接吗？",
+                        "检查更新", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    {
+                        Process.Start(new ProcessStartInfo(latest.ZipUrl ?? latest.Page) { UseShellExecute = true });
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(this, $"当前已是最新版本 v{UpdateChecker.Current}。", "检查更新",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch
+            {
+                if (MessageBox.Show(this,
+                    "检查更新失败（可能是网络问题）。\n\n要直接打开发布页看看吗？",
+                    "检查更新", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo(UpdateChecker.ReleasesPage) { UseShellExecute = true });
+                }
+            }
+            finally
+            {
+                update.Text = "检查更新";
+                update.Enabled = true;
+            }
+        };
         Paint += (_, e) =>
         {
             using var pen = new Pen(PaperTheme.Border);
             e.Graphics.DrawLine(pen, 20, aboutLine.Top - 10, ClientSize.Width - 20, aboutLine.Top - 10);
         };
 
-        Controls.AddRange(new Control[] { fullscreen, autostart, bedtime, save, aboutLine, authorLine });
+        Controls.AddRange(new Control[] { fullscreen, autostart, bedtime, save, aboutLine, authorLine, update });
         PaperTheme.PaperWindow(this, "设置");
     }
 
