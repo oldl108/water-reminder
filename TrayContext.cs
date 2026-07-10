@@ -22,7 +22,7 @@ class TrayContext : ApplicationContext
         _panel = new PanelForm(_store, OnWaterRecorded);
 
         _tray.Icon = MakeDropIcon();
-        _tray.Text = "喝水提醒";
+        _tray.Text = "早睡早起多喝水";
         _tray.Visible = true;
         _tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) _panel.ShowNearTray(); };
 
@@ -171,7 +171,7 @@ class TrayContext : ApplicationContext
 
     void Notify(string text)
     {
-        _tray.BalloonTipTitle = "喝水提醒";
+        _tray.BalloonTipTitle = "早睡早起多喝水";
         _tray.BalloonTipText = text;
         _tray.ShowBalloonTip(2000);
     }

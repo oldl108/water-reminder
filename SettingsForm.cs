@@ -18,7 +18,7 @@ class SettingsForm : Form
         AutoScaleMode = AutoScaleMode.Dpi;
         Text = "设置";
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(400, 380);
+        ClientSize = new Size(400, 424);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         Font = new Font("Microsoft YaHei UI", 9f);
@@ -63,7 +63,28 @@ class SettingsForm : Form
             Close();
         };
 
-        Controls.AddRange(new Control[] { fullscreen, autostart, save });
+        y += 46;
+        var aboutLine = new Label
+        {
+            Text = "早睡早起多喝水 v0.2.0",
+            ForeColor = PaperTheme.InkLight,
+            AutoSize = true,
+            Location = new Point(20, y),
+        };
+        var authorLine = new Label
+        {
+            Text = "作者微信公众号：爱玩的果果",
+            ForeColor = PaperTheme.AccentInk,
+            AutoSize = true,
+            Location = new Point(20, y + 22),
+        };
+        Paint += (_, e) =>
+        {
+            using var pen = new Pen(PaperTheme.Border);
+            e.Graphics.DrawLine(pen, 20, aboutLine.Top - 10, ClientSize.Width - 20, aboutLine.Top - 10);
+        };
+
+        Controls.AddRange(new Control[] { fullscreen, autostart, save, aboutLine, authorLine });
         PaperTheme.PaperWindow(this, "设置");
     }
 
