@@ -112,51 +112,18 @@ class SettingsForm : Form
             }
         };
 
-        var update = PaperTheme.PaperButton("检查更新", new Point(272, y + 4), new Size(104, 30));
-        update.Click += async (_, _) =>
+        const string downloadPage = "https://gg999.lanzouv.com/s/heshui";
+        var update = PaperTheme.PaperButton("下载最新版", new Point(262, y + 4), new Size(116, 30));
+        update.Click += (_, _) =>
         {
-            update.Enabled = false;
-            update.Text = "检查中…";
             try
             {
-                var latest = await UpdateChecker.FetchLatestAsync();
-                if (latest == null)
-                {
-                    if (MessageBox.Show(this,
-                        "没查到版本信息（可能是网络问题）。\n\n要直接打开下载页（蓝奏云）看看吗？",
-                        "检查更新", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                    {
-                        Process.Start(new ProcessStartInfo(UpdateChecker.LanzouPage) { UseShellExecute = true });
-                    }
-                }
-                else if (latest.Latest > UpdateChecker.Current)
-                {
-                    if (MessageBox.Show(this,
-                        $"发现新版本 v{latest.Latest}（当前 v{UpdateChecker.Current}）。\n\n现在打开下载页（蓝奏云）吗？",
-                        "检查更新", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                    {
-                        Process.Start(new ProcessStartInfo(latest.DownloadUrl) { UseShellExecute = true });
-                    }
-                }
-                else
-                {
-                    MessageBox.Show(this, $"当前已是最新版本 v{UpdateChecker.Current}。", "检查更新",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                Process.Start(new ProcessStartInfo(downloadPage) { UseShellExecute = true });
             }
-            catch
+            catch (Exception ex)
             {
-                if (MessageBox.Show(this,
-                    "检查更新失败。\n\n要直接打开下载页（蓝奏云）看看吗？",
-                    "检查更新", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                {
-                    Process.Start(new ProcessStartInfo(UpdateChecker.LanzouPage) { UseShellExecute = true });
-                }
-            }
-            finally
-            {
-                update.Text = "检查更新";
-                update.Enabled = true;
+                MessageBox.Show(this, $"打开浏览器失败：{ex.Message}\n\n请手动访问下载页：\n{downloadPage}",
+                    "早睡早起多喝水", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         };
         Paint += (_, e) =>
