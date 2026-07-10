@@ -1,6 +1,15 @@
 # WaterReminder 喝水提醒
 
-一个**绝不打扰**的 Windows 托盘小工具：定时提醒喝水 + 站起来活动，并记录每天的饮水情况。
+一个**绝不打扰**的 Windows 托盘小工具：定时提醒喝水 + 站起来活动 + 定点吃药提醒，并记录每天的情况。
+
+## 下载
+
+到 [Releases](https://github.com/oldl108/water-reminder/releases) 页面下载最新的
+`WaterReminder-vX.X.X-win-x64.zip`，解压后双击 `WaterReminder.exe` 即可，
+免安装、无需 .NET 运行时（Windows 10/11 x64）。
+
+> 首次运行时 Windows SmartScreen 可能提示"已保护你的电脑"——因为程序没有付费的
+> 代码签名证书。点「更多信息」→「仍要运行」即可。程序完全离线，不联网、不收集任何数据。
 
 ## 设计原则
 
