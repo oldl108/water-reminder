@@ -5,6 +5,16 @@ static class Program
     [STAThread]
     static void Main(string[] args)
     {
+        // 开发用：生成 icon.ico 和预览图
+        if (args.Contains("--genicon"))
+        {
+            string dir = AppContext.BaseDirectory;
+            IconFactory.SaveIco(Path.Combine(dir, "icon.ico"));
+            using (var png = IconFactory.Draw(256))
+                png.Save(Path.Combine(dir, "icon-preview.png"));
+            return;
+        }
+
         // 开发用陈列模式：一次摆出所有窗口，方便检查布局和截图
         if (args.Contains("--showcase"))
         {

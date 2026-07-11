@@ -89,7 +89,7 @@ class SettingsForm : Form
         const string authorUrl = "https://mp.weixin.qq.com/s/1P3FnoMtXusX0BdnAk4lGA";
         var authorLine = new LinkLabel
         {
-            Text = "作者微信公众号：爱玩的果果",
+            Text = "微信公众号：爱玩的果果",
             AutoSize = true,
             Location = new Point(20, y + 22),
             LinkColor = PaperTheme.AccentInk,
