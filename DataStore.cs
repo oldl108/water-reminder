@@ -51,17 +51,22 @@ class DayRecord
 
 class DataStore
 {
-    static readonly string Dir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WaterReminder");
-    static readonly string ConfigPath = Path.Combine(Dir, "config.json");
-    static readonly string DataPath = Path.Combine(Dir, "data.json");
     static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true };
+
+    readonly string Dir;
+    readonly string ConfigPath;
+    readonly string DataPath;
 
     public AppConfig Config { get; private set; } = new();
     public Dictionary<string, DayRecord> Days { get; private set; } = new();
 
-    public DataStore()
+    /// <param name="baseDir">数据目录；留空用 %APPDATA%\WaterReminder。截图/演示时可指向临时目录。</param>
+    public DataStore(string? baseDir = null)
     {
+        Dir = baseDir ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WaterReminder");
+        ConfigPath = Path.Combine(Dir, "config.json");
+        DataPath = Path.Combine(Dir, "data.json");
         Directory.CreateDirectory(Dir);
         Config = Load<AppConfig>(ConfigPath) ?? new AppConfig();
         Days = Load<Dictionary<string, DayRecord>>(DataPath) ?? new();
